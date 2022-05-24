@@ -1,42 +1,40 @@
-import React from 'react';
-import {
-  ChakraProvider,
-  Box,
-  Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
-  theme,
-} from '@chakra-ui/react';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
-import { Logo } from './Logo';
+import React, { useState, createContext } from 'react';
+import { ChakraProvider, theme } from '@chakra-ui/react';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Navbar from './components/Navbar';
+import SignIn from './pages/SignIn';
+import Details from './pages/Details';
+import { Flex } from '@chakra-ui/react';
 
-// import { firebaseui } from './Settings/firebaseConfig';
+import app from './settings/firebaseConfig';
+import NotFound from './pages/NotFound';
+
+// Server
+import { makeServer } from './server/server';
+
+if (process.env.NODE_ENV === 'development') {
+  makeServer({ environment: 'development' });
+}
+
+export const userContext = createContext(null);
 
 function App() {
+  const [user, setUser] = useState(null);
+
   return (
     <ChakraProvider theme={theme}>
-      <Box textAlign="center" fontSize="xl">
-        <Grid minH="100vh" p={3}>
-          <ColorModeSwitcher justifySelf="flex-end" />
-          <VStack spacing={8}>
-            <Logo h="40vmin" pointerEvents="none" />
-            <Text>
-              Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
-            </Text>
-            <Link
-              color="teal.500"
-              href="https://chakra-ui.com"
-              fontSize="2xl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn Chakra
-            </Link>
-          </VStack>
-        </Grid>
-      </Box>
+      <userContext.Provider value={[user, setUser]}>
+        <Flex flexDir={'column'} height={'100vh'}>
+          <Navbar></Navbar>
+          <Routes>
+            <Route path="/" element={<Home />}></Route>
+            <Route path="/login" element={<SignIn />}></Route>
+            <Route path="/details/:hotelId" element={<Details />}></Route>
+            <Route path="*" element={<NotFound />}></Route>
+          </Routes>
+        </Flex>
+      </userContext.Provider>
     </ChakraProvider>
   );
 }
